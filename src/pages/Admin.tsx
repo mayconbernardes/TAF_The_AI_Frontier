@@ -8,7 +8,16 @@ import { useToast } from "@/components/ui/use-toast";
 import AdminBlogList from "@/components/AdminBlogList";
 import CreatePostButton from "@/components/CreatePostButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LayoutDashboard, FileText, Users } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Mail } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { format } from "date-fns";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -25,7 +34,7 @@ const Admin = () => {
     checkAuth();
   }, [navigate]);
 
-  const { data: posts, isLoading, error } = useQuery({
+  const { data: posts, isLoading: postsLoading, error: postsError } = useQuery({
     queryKey: ["admin-blog-posts"],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -42,8 +51,38 @@ const Admin = () => {
     },
   });
 
+  const { data: messages, isLoading: messagesLoading } = useQuery({
+    queryKey: ["contact-messages"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("contact_submissions")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const publishedPosts = posts?.filter(post => post.is_published)?.length || 0;
   const draftPosts = posts?.filter(post => !post.is_published)?.length || 0;
+  const totalMessages = messages?.length || 0;
+  const unreadMessages = messages?.filter(msg => !msg.is_read)?.length || 0;
+
+  const markAsRead = async (id: string) => {
+    const { error } = await supabase
+      .from("contact_submissions")
+      .update({ is_read: true })
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to mark message as read",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -57,7 +96,7 @@ const Admin = () => {
           <CreatePostButton />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
@@ -94,16 +133,78 @@ const Admin = () => {
               </p>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Messages</CardTitle>
+              <Mail className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{unreadMessages}/{totalMessages}</div>
+              <p className="text-xs text-muted-foreground">
+                Unread/Total messages
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Blog Posts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AdminBlogList posts={posts || []} isLoading={isLoading} error={error} />
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Blog Posts</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AdminBlogList posts={posts || []} isLoading={postsLoading} error={postsError} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Messages</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {messagesLoading ? (
+                <p>Loading messages...</p>
+              ) : (
+                <div className="relative w-full overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Message</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {messages?.map((message) => (
+                        <TableRow key={message.id} className={!message.is_read ? "bg-muted/50" : ""}>
+                          <TableCell>{message.name}</TableCell>
+                          <TableCell>{message.email}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">{message.message}</TableCell>
+                          <TableCell>{format(new Date(message.created_at || ''), 'MMM d, yyyy')}</TableCell>
+                          <TableCell>
+                            {!message.is_read ? (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => markAsRead(message.id)}
+                              >
+                                Mark as read
+                              </Button>
+                            ) : (
+                              <span className="text-muted-foreground">Read</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </main>
     </div>
   );
