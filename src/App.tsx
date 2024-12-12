@@ -8,6 +8,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import Blog from "./pages/Blog";
+import BlogPost from "./components/BlogPost";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/login" element={<Login />} />
         </Routes>
