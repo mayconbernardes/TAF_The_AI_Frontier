@@ -68,11 +68,16 @@ const Blog = () => {
                   id: post.id,
                   title: post.title,
                   excerpt: post.excerpt || "",
-                  date: new Date(post.published_at).toLocaleDateString(),
-                  image: post.image_url || "/placeholder.svg",
+                  date: new Date(post.published_at || "").toLocaleDateString(),
+                  image: post.image_url || "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
                 }}
               />
             ))}
+            {posts?.length === 0 && (
+              <div className="col-span-full text-center text-muted-foreground py-12">
+                No published posts yet.
+              </div>
+            )}
           </div>
         )}
       </main>
