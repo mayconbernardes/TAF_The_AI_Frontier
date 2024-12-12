@@ -44,7 +44,7 @@ const Admin = () => {
         .from("blog_posts")
         .select("*")
         .eq("author_id", session.user.id)
-        .order("created_at", { ascending: false });
+        .order("updated_at", { ascending: false }); // Changed from created_at to updated_at
 
       if (error) throw error;
       return data;
