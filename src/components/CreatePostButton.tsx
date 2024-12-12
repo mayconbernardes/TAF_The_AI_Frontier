@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { generateUniqueSlug } from "@/lib/utils";
 
 const CreatePostButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,10 +40,8 @@ const CreatePostButton = () => {
       return;
     }
 
-    const slug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
+    // Use the new generateUniqueSlug function instead of the simple slug generation
+    const slug = generateUniqueSlug(title);
 
     const { error } = await supabase.from("blog_posts").insert({
       title,
