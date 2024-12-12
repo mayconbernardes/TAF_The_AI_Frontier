@@ -24,9 +24,11 @@ const formSchema = z.object({
   message: z.string().min(10, "Message must be at least 10 characters"),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -35,10 +37,14 @@ const Contact = () => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
-      const { error } = await supabase.from("contact_submissions").insert([values]);
+      const { error } = await supabase.from("contact_submissions").insert([{
+        name: values.name,
+        email: values.email,
+        message: values.message,
+      }]);
 
       if (error) throw error;
 
