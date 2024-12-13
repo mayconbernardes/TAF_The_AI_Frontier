@@ -53,9 +53,9 @@ const MessagesSection = () => {
         {messagesLoading ? (
           <p>Loading messages...</p>
         ) : (
-          <div className="relative w-full overflow-auto">
+          <div className="relative w-full overflow-auto max-h-[600px]">
             <Table>
-              <TableHeader>
+              <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
