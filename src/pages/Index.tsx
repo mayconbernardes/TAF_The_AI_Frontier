@@ -6,6 +6,7 @@ import BlogCard, { BlogPost } from "../components/BlogCard";
 const featuredPosts: BlogPost[] = [
   {
     id: "ai-healthcare",
+    slug: "ai-healthcare",
     title: "How AI is Revolutionizing Healthcare",
     excerpt: "Discover how artificial intelligence is transforming medical diagnosis, treatment planning, and patient care.",
     date: "2024-02-20",
@@ -13,6 +14,7 @@ const featuredPosts: BlogPost[] = [
   },
   {
     id: "machine-learning-guide",
+    slug: "machine-learning-guide",
     title: "What is Machine Learning? A Beginner's Guide",
     excerpt: "Learn the fundamentals of machine learning and how it's shaping the future of technology.",
     date: "2024-02-19",
@@ -20,6 +22,7 @@ const featuredPosts: BlogPost[] = [
   },
   {
     id: "ai-ethics",
+    slug: "ai-ethics",
     title: "Ethical Dilemmas in Artificial Intelligence",
     excerpt: "Exploring the moral implications and challenges of AI development and deployment.",
     date: "2024-02-18",
