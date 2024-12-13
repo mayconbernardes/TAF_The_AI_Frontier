@@ -11,6 +11,8 @@ import Blog from "./pages/Blog";
 import BlogPost from "./components/BlogPost";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
+import Terms from "./pages/Terms";
+import Disclaimer from "./pages/Disclaimer";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,8 @@ const App = () => (
           <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
