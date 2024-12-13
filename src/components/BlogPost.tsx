@@ -16,7 +16,7 @@ const BlogPost = () => {
         .select("*")
         .eq("slug", slug)
         .eq("is_published", true)
-        .single();
+        .maybeSingle(); // Changed from single() to maybeSingle()
 
       if (error) throw error;
       return data;
