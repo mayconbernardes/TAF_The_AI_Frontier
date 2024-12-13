@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 
 export interface BlogPost {
   id: string;
+  slug: string;
   title: string;
   excerpt: string;
   date: string;
@@ -24,7 +25,7 @@ const BlogCard = ({ post }: { post: BlogPost }) => {
           {post.date}
         </time>
         <h3 className="text-xl font-bold mt-2 mb-3 group-hover:text-purple-600 transition-colors">
-          <Link to={`/blog/${post.id}`} className="hover:text-accent transition-colors">
+          <Link to={`/blog/${post.slug}`} className="hover:text-accent transition-colors">
             {post.title}
           </Link>
         </h3>
@@ -32,7 +33,7 @@ const BlogCard = ({ post }: { post: BlogPost }) => {
           {post.excerpt}
         </p>
         <Link 
-          to={`/blog/${post.id}`} 
+          to={`/blog/${post.slug}`} 
           className="inline-flex items-center mt-4 text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors"
         >
           Read More →

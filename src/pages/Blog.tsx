@@ -77,6 +77,7 @@ const Blog = () => {
                 key={post.id}
                 post={{
                   id: post.id,
+                  slug: post.slug,
                   title: post.title,
                   excerpt: post.excerpt || "",
                   date: new Date(post.published_at || "").toLocaleDateString(),
