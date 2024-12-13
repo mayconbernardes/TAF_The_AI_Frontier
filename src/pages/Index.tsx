@@ -1,36 +1,27 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import BlogCard, { BlogPost } from "../components/BlogCard";
-
-const featuredPosts: BlogPost[] = [
-  {
-    id: "ai-healthcare",
-    slug: "ai-healthcare",
-    title: "How AI is Revolutionizing Healthcare",
-    excerpt: "Discover how artificial intelligence is transforming medical diagnosis, treatment planning, and patient care.",
-    date: "2024-02-20",
-    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
-  },
-  {
-    id: "machine-learning-guide",
-    slug: "machine-learning-guide",
-    title: "What is Machine Learning? A Beginner's Guide",
-    excerpt: "Learn the fundamentals of machine learning and how it's shaping the future of technology.",
-    date: "2024-02-19",
-    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
-  },
-  {
-    id: "ai-ethics",
-    slug: "ai-ethics",
-    title: "Ethical Dilemmas in Artificial Intelligence",
-    excerpt: "Exploring the moral implications and challenges of AI development and deployment.",
-    date: "2024-02-18",
-    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-  },
-];
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Index = () => {
+  const { data: posts, isLoading } = useQuery({
+    queryKey: ["featured-posts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("*")
+        .eq("is_published", true)
+        .order("published_at", { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -53,12 +44,35 @@ const Index = () => {
         </section>
 
         <section className="container mx-auto px-4 py-16">
-          <h2 className="text-3xl font-bold mb-8">Featured Articles</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredPosts.map((post) => (
-              <BlogCard key={post.id} post={post} />
-            ))}
-          </div>
+          <h2 className="text-3xl font-bold mb-8">Latest Articles</h2>
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="space-y-4">
+                  <Skeleton className="h-48 w-full rounded-xl" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {posts?.map((post) => (
+                <BlogCard
+                  key={post.id}
+                  post={{
+                    id: post.id,
+                    slug: post.slug,
+                    title: post.title,
+                    excerpt: post.excerpt || "",
+                    date: new Date(post.published_at || "").toLocaleDateString(),
+                    image: post.image_url || "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </section>
       </main>
       <Footer />
