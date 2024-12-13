@@ -1,9 +1,11 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "./Header";
 import Footer from "./Footer";
 import { Skeleton } from "./ui/skeleton";
+import { Button } from "./ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const BlogPost = () => {
   const { id: slug } = useParams();
@@ -16,7 +18,7 @@ const BlogPost = () => {
         .select("*")
         .eq("slug", slug)
         .eq("is_published", true)
-        .maybeSingle(); // Changed from single() to maybeSingle()
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -41,6 +43,14 @@ const BlogPost = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <article className="container mx-auto px-4 py-16 max-w-4xl">
+        <div className="mb-8">
+          <Link to="/blog">
+            <Button variant="ghost" className="group">
+              <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+              Back to Blog
+            </Button>
+          </Link>
+        </div>
         {isLoading ? (
           <div className="space-y-8">
             <Skeleton className="h-12 w-3/4 mx-auto" />
