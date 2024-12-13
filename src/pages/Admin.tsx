@@ -3,27 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import AdminBlogList from "@/components/AdminBlogList";
 import CreatePostButton from "@/components/CreatePostButton";
+import AdminBlogList from "@/components/AdminBlogList";
+import AdminStats from "@/components/AdminStats";
+import MessagesSection from "@/components/MessagesSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LayoutDashboard, FileText, Users, Mail } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { format } from "date-fns";
 
 const Admin = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
 
-  // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -44,14 +32,14 @@ const Admin = () => {
         .from("blog_posts")
         .select("*")
         .eq("author_id", session.user.id)
-        .order("updated_at", { ascending: false }); // Changed from created_at to updated_at
+        .order("updated_at", { ascending: false });
 
       if (error) throw error;
       return data;
     },
   });
 
-  const { data: messages, isLoading: messagesLoading } = useQuery({
+  const { data: messages } = useQuery({
     queryKey: ["contact-messages"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -69,21 +57,6 @@ const Admin = () => {
   const totalMessages = messages?.length || 0;
   const unreadMessages = messages?.filter(msg => !msg.is_read)?.length || 0;
 
-  const markAsRead = async (id: string) => {
-    const { error } = await supabase
-      .from("contact_submissions")
-      .update({ is_read: true })
-      .eq("id", id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to mark message as read",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -96,56 +69,13 @@ const Admin = () => {
           <CreatePostButton />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{posts?.length || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                All blog posts
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Published</CardTitle>
-              <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{publishedPosts}</div>
-              <p className="text-xs text-muted-foreground">
-                Live on your blog
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Drafts</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{draftPosts}</div>
-              <p className="text-xs text-muted-foreground">
-                Unpublished posts
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Messages</CardTitle>
-              <Mail className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{unreadMessages}/{totalMessages}</div>
-              <p className="text-xs text-muted-foreground">
-                Unread/Total messages
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+        <AdminStats
+          totalPosts={posts?.length || 0}
+          publishedPosts={publishedPosts}
+          draftPosts={draftPosts}
+          totalMessages={totalMessages}
+          unreadMessages={unreadMessages}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
@@ -153,57 +83,15 @@ const Admin = () => {
               <CardTitle>Blog Posts</CardTitle>
             </CardHeader>
             <CardContent>
-              <AdminBlogList posts={posts || []} isLoading={postsLoading} error={postsError} />
+              <AdminBlogList
+                posts={posts || []}
+                isLoading={postsLoading}
+                error={postsError}
+              />
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Messages</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {messagesLoading ? (
-                <p>Loading messages...</p>
-              ) : (
-                <div className="relative w-full overflow-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Message</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {messages?.map((message) => (
-                        <TableRow key={message.id} className={!message.is_read ? "bg-muted/50" : ""}>
-                          <TableCell>{message.name}</TableCell>
-                          <TableCell>{message.email}</TableCell>
-                          <TableCell className="max-w-[200px] truncate">{message.message}</TableCell>
-                          <TableCell>{format(new Date(message.created_at || ''), 'MMM d, yyyy')}</TableCell>
-                          <TableCell>
-                            {!message.is_read ? (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => markAsRead(message.id)}
-                              >
-                                Mark as read
-                              </Button>
-                            ) : (
-                              <span className="text-muted-foreground">Read</span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <MessagesSection />
         </div>
       </main>
     </div>
