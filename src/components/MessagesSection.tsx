@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 import MessageDialog from "./MessageDialog";
 
@@ -53,7 +54,7 @@ const MessagesSection = () => {
         {messagesLoading ? (
           <p>Loading messages...</p>
         ) : (
-          <div className="relative w-full overflow-auto max-h-[600px]">
+          <ScrollArea className="h-[500px] w-full rounded-md border">
             <Table>
               <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
@@ -96,7 +97,7 @@ const MessagesSection = () => {
                 ))}
               </TableBody>
             </Table>
-          </div>
+          </ScrollArea>
         )}
       </CardContent>
       <MessageDialog
